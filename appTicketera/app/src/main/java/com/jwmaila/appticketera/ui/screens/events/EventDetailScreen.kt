@@ -26,6 +26,7 @@ import com.jwmaila.appticketera.ui.screens.payment.PaymentViewModel
 import com.jwmaila.appticketera.ui.screens.payment.PaymentState
 import com.jwmaila.appticketera.utils.formatDate
 import com.jwmaila.appticketera.utils.formatPrice
+import com.jwmaila.appticketera.utils.ImageUtils
 import com.jwmaila.appticketera.ui.theme.*
 import com.stripe.android.paymentsheet.PaymentSheet
 import com.stripe.android.paymentsheet.PaymentSheetResult
@@ -187,7 +188,7 @@ fun EventDetailScreen(
                 ) {
                     // Imagen
                     AsyncImage(
-                        model = state.event.imageUrl ?: "https://via.placeholder.com/800x400",
+                        model = ImageUtils.getFullImageUrl(state.event.imageUrl) ?: "https://via.placeholder.com/800x400",
                         contentDescription = state.event.name,
                         modifier = Modifier
                             .fillMaxWidth()
