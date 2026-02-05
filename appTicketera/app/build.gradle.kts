@@ -80,6 +80,9 @@ dependencies {
     // QR Code
     implementation(libs.zxing.android.embedded)
     
+    // Accompanist Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

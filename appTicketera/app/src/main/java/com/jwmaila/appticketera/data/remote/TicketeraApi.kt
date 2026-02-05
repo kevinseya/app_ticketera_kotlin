@@ -1,6 +1,8 @@
 package com.jwmaila.appticketera.data.remote
 
 import com.jwmaila.appticketera.data.model.*
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.*
 
 interface TicketeraApi {
@@ -21,13 +23,28 @@ interface TicketeraApi {
     @GET("events/{id}")
     suspend fun getEvent(@Path("id") id: String): EventWithSeats
     
+    @Multipart
     @POST("events")
-    suspend fun createEvent(@Body request: CreateEventRequest): Event
+    suspend fun createEvent(
+        @Part("name") name: RequestBody,
+        @Part("description") description: RequestBody?,
+        @Part("date") date: RequestBody,
+        @Part("venue") venue: RequestBody,
+        @Part("ticketPrice") ticketPrice: RequestBody,
+        @Part("totalSeats") totalSeats: RequestBody,
+        @Part image: MultipartBody.Part?
+    ): Event
     
+    @Multipart
     @PATCH("events/{id}")
     suspend fun updateEvent(
         @Path("id") id: String,
-        @Body request: UpdateEventRequest
+        @Part("name") name: RequestBody?,
+        @Part("description") description: RequestBody?,
+        @Part("date") date: RequestBody?,
+        @Part("venue") venue: RequestBody?,
+        @Part("ticketPrice") ticketPrice: RequestBody?,
+        @Part image: MultipartBody.Part?
     ): Event
     
     @DELETE("events/{id}")

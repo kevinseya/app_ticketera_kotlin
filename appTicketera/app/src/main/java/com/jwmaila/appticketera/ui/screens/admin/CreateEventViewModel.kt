@@ -1,5 +1,6 @@
 package com.jwmaila.appticketera.ui.screens.admin
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jwmaila.appticketera.data.model.Event
@@ -55,12 +56,11 @@ class CreateEventViewModel @Inject constructor(
         venue: String,
         ticketPrice: Double,
         totalSeats: Int,
-        imageUrl: String?
+        imageUri: Uri?
     ) {
         viewModelScope.launch {
             _createState.value = CreateEventState.Loading
             val normalizedDate = normalizeDate(date)
-            val sanitizedImageUrl = imageUrl?.trim()?.replace("\u0000", "")
             repository.createEvent(
                 CreateEventRequest(
                     name = name,
@@ -68,8 +68,10 @@ class CreateEventViewModel @Inject constructor(
                     date = normalizedDate,
                     venue = venue,
                     ticketPrice = ticketPrice,
-                    imageUrl = sanitizedImageUrl
-                )
+                    imageUrl = null
+                ),
+                totalSeats = totalSeats,
+                imageUri = imageUri
             )
                 .onSuccess {
                     _createState.value = CreateEventState.Success
@@ -88,12 +90,11 @@ class CreateEventViewModel @Inject constructor(
         venue: String,
         ticketPrice: Double,
         totalSeats: Int,
-        imageUrl: String?
+        imageUri: Uri?
     ) {
         viewModelScope.launch {
             _createState.value = CreateEventState.Loading
             val normalizedDate = normalizeDate(date)
-            val sanitizedImageUrl = imageUrl?.trim()?.replace("\u0000", "")
             repository.updateEvent(
                 id = eventId,
                 request = UpdateEventRequest(
@@ -102,8 +103,9 @@ class CreateEventViewModel @Inject constructor(
                     date = normalizedDate,
                     venue = venue,
                     ticketPrice = ticketPrice,
-                    imageUrl = sanitizedImageUrl
-                )
+                    imageUrl = null
+                ),
+                imageUri = imageUri
             )
                 .onSuccess {
                     _createState.value = CreateEventState.Success

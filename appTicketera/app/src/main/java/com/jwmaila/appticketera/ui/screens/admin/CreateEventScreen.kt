@@ -1,5 +1,6 @@
 package com.jwmaila.appticketera.ui.screens.admin
 
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,15 +8,20 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import com.jwmaila.appticketera.ui.components.ImagePickerDialog
 import com.jwmaila.appticketera.ui.theme.*
+import com.jwmaila.appticketera.utils.ImageUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -33,8 +39,11 @@ fun CreateEventScreen(
     var ticketPrice by remember { mutableStateOf("") }
     var totalSeats by remember { mutableStateOf("100") }
     var imageUrl by remember { mutableStateOf("") }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var showImagePicker by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     
     val createState by viewModel.createState.collectAsState()
     
@@ -174,12 +183,44 @@ fun CreateEventScreen(
             OutlinedTextField(
                 value = imageUrl,
                 onValueChange = { imageUrl = it },
-                label = { Text("URL de imagen") },
+                label = { Text("URL de imagen (opcional)") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
-                placeholder = { Text("https://...") }
+                placeholder = { Text("https://...") },
+                readOnly = true
             )
+            
+            // Botón para seleccionar imagen
+            OutlinedButton(
+                onClick = { showImagePicker = true },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Image,
+                    contentDescription = "Cargar foto",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Cargar Foto")
+            }
+            
+            // Previsualización de la imagen
+            if (selectedImageUri != null || imageUrl.isNotBlank()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    AsyncImage(
+                        model = selectedImageUri ?: ImageUtils.getFullImageUrl(imageUrl),
+                        contentDescription = "Vista previa",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
             
             Spacer(modifier = Modifier.height(8.dp))
             
@@ -193,7 +234,7 @@ fun CreateEventScreen(
                             venue = venue,
                             ticketPrice = ticketPrice.toDoubleOrNull() ?: 0.0,
                             totalSeats = totalSeats.toIntOrNull() ?: 100,
-                            imageUrl = imageUrl.ifBlank { null }
+                            imageUri = selectedImageUri
                         )
                     } else {
                         viewModel.updateEvent(
@@ -204,7 +245,7 @@ fun CreateEventScreen(
                             venue = venue,
                             ticketPrice = ticketPrice.toDoubleOrNull() ?: 0.0,
                             totalSeats = totalSeats.toIntOrNull() ?: 100,
-                            imageUrl = imageUrl.ifBlank { null }
+                            imageUri = selectedImageUri
                         )
                     }
                 },
@@ -230,5 +271,16 @@ fun CreateEventScreen(
                 }
             }
         }
+    }
+    
+    // Modal de selección de imagen
+    if (showImagePicker) {
+        ImagePickerDialog(
+            onDismiss = { showImagePicker = false },
+            onImageSelected = { uri ->
+                selectedImageUri = uri
+                imageUrl = uri.toString()
+            }
+        )
     }
 }

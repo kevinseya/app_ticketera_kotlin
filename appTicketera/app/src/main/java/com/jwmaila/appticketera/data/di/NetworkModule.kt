@@ -32,7 +32,7 @@ object NetworkModule {
         return if (isEmulator()) {
             "http://10.0.2.2:3000/"
         } else {
-            "http://192.168.1.8:3000/"
+            "http://192.168.100.29:3000/"
         }
     }
     
