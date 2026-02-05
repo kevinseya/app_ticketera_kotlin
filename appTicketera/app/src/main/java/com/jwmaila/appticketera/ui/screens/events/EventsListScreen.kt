@@ -28,6 +28,7 @@ import coil.compose.AsyncImage
 import com.jwmaila.appticketera.data.model.Event
 import com.jwmaila.appticketera.utils.formatDate
 import com.jwmaila.appticketera.utils.formatPrice
+import com.jwmaila.appticketera.utils.ImageUtils
 import com.jwmaila.appticketera.ui.theme.*
 import com.jwmaila.appticketera.ui.components.AppTopBar
 import com.jwmaila.appticketera.data.local.UserPreferences
@@ -218,7 +219,7 @@ fun EventCard(
         Column {
             // Imagen del evento
             AsyncImage(
-                model = event.imageUrl ?: "https://via.placeholder.com/400x200",
+                model = ImageUtils.getFullImageUrl(event.imageUrl) ?: "https://via.placeholder.com/400x200",
                 contentDescription = event.name,
                 modifier = Modifier
                     .fillMaxWidth()
