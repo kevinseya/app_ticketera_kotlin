@@ -7,34 +7,47 @@ import { UpdateEventDto } from './dto/update-event.dto';
 export class EventsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createEventDto: CreateEventDto) {
-    const sanitizedImageUrl = createEventDto.imageUrl
+  async create(createEventDto: CreateEventDto, file?: Express.Multer.File) {
+    let imageUrl = createEventDto.imageUrl
       ? createEventDto.imageUrl.replace(/\u0000/g, '').trim()
       : undefined;
+
+    // Si se subió un archivo, usar su ruta
+    if (file) {
+      imageUrl = `/uploads/${file.filename}`;
+    }
+
+    // Calcular dimensiones del cuadrado según totalSeats
+    const requestedSeats = createEventDto.totalSeats || 100;
+    const sideLength = Math.ceil(Math.sqrt(requestedSeats));
+    const totalSeatsInGrid = sideLength * sideLength;
 
     const event = await this.prisma.event.create({
       data: {
         ...createEventDto,
-        imageUrl: sanitizedImageUrl,
+        imageUrl,
         date: new Date(createEventDto.date),
-        totalSeats: 100, // 10x10
+        totalSeats: requestedSeats, // Guardar solo los asientos solicitados
       },
     });
 
-    // Crear los asientos (10x10 = 100 asientos)
+    // Crear los asientos en forma de cuadrado (sideLength x sideLength)
     const seats: Array<{
       eventId: string;
       row: number;
       column: number;
       isOccupied: boolean;
     }> = [];
-    for (let row = 1; row <= 10; row++) {
-      for (let column = 1; column <= 10; column++) {
+    let seatCount = 0;
+    for (let row = 1; row <= sideLength; row++) {
+      for (let column = 1; column <= sideLength; column++) {
+        seatCount++;
+        // Solo los primeros 'requestedSeats' están disponibles, el resto bloqueados
         seats.push({
           eventId: event.id,
           row,
           column,
-          isOccupied: false,
+          isOccupied: seatCount > requestedSeats, // Bloquear asientos extras
         });
       }
     }
@@ -83,7 +96,7 @@ export class EventsService {
     return event;
   }
 
-  async update(id: string, updateEventDto: UpdateEventDto) {
+  async update(id: string, updateEventDto: UpdateEventDto, file?: Express.Multer.File) {
     const event = await this.prisma.event.findUnique({ where: { id } });
 
     if (!event) {
@@ -94,7 +107,11 @@ export class EventsService {
     if (updateEventDto.date) {
       dataToUpdate.date = new Date(updateEventDto.date);
     }
-    if (typeof updateEventDto.imageUrl === 'string') {
+    
+    // Si se subió un archivo, usar su ruta
+    if (file) {
+      dataToUpdate.imageUrl = `/uploads/${file.filename}`;
+    } else if (typeof updateEventDto.imageUrl === 'string') {
       dataToUpdate.imageUrl = updateEventDto.imageUrl.replace(/\u0000/g, '').trim();
     }
 
