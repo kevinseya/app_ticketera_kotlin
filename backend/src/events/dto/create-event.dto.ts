@@ -24,4 +24,9 @@ export class CreateEventDto {
   @IsNumber()
   @Min(0)
   ticketPrice: number;
+
+  @IsNumber()
+  @IsOptional()
+  @Min(1)
+  totalSeats?: number;
 }
